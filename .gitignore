@@ -1,0 +1,6 @@
+# CMake build output (generated, disposable — regenerate with `cmake -B build`)
+build/
+cpp-worker/build/
+
+# macOS
+.DS_Store
