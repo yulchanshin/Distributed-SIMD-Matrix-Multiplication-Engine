@@ -47,6 +47,8 @@ FetchContent_MakeAvailable(benchmark)
 # Define our benchmark program. Named matrix_benchmark 
 add_executable(matrix_benchmark benchmarks/benchmark_main.cpp)
 
+
+target_include_directories(matrix_benchmark PRIVATE include)
 # Link our executable against Google Benchmark. The :: form is the modern
 # "imported target" — it carries the library's include paths + flags for us.
 target_link_libraries(matrix_benchmark PRIVATE benchmark::benchmark)

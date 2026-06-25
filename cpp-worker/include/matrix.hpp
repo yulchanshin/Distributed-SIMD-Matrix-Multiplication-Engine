@@ -1,3 +1,4 @@
+#pragma once
 #include <cstddef> //for std::size_t
 #include <stdexcept>
 #include <vector>
