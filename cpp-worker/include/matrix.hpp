@@ -56,7 +56,7 @@ public:
     // same O(N^3) algorithm, but accumulate each dot product in a local
     // (register) and write to C exactly once per cell. Avoids the repeated
     // RAM read/write of C(i,j) that aliasing can force the compiler to keep.
-    static Matrix multiply_matrix_accumulated(const Matrix& A,
+    static Matrix multiply_matrix_accumulator(const Matrix& A,
                                               const Matrix& B) {
         if (A.cols() != B.rows()) {
             throw std::invalid_argument(
