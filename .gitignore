@@ -2,5 +2,8 @@
 build/
 cpp-worker/build/
 
+# clangd / language-server index cache (generated from compile_commands.json)
+.cache/
+
 # macOS
 .DS_Store

@@ -47,6 +47,8 @@ FetchContent_MakeAvailable(benchmark)
 # Define our benchmark program. Named matrix_benchmark 
 add_executable(matrix_benchmark benchmarks/benchmark_main.cpp)
 
+
+target_include_directories(matrix_benchmark PRIVATE include)
 # Link our executable against Google Benchmark. The :: form is the modern
 # "imported target" — it carries the library's include paths + flags for us.
 target_link_libraries(matrix_benchmark PRIVATE benchmark::benchmark)
@@ -57,3 +59,14 @@ target_compile_options(matrix_benchmark PRIVATE
     -Wall
     $<$<CONFIG:Release>:-O3>
     $<$<AND:$<CONFIG:Release>,$<BOOL:${MATMUL_NATIVE_ARCH}>>:-march=native>)
+
+# --- Correctness tests (TSK-102 acceptance criterion #1) ---
+# A separate, dependency-free executable that asserts the math is correct.
+# No Google Benchmark link needed; it only consumes the header-only Matrix.
+enable_testing()
+add_executable(matrix_tests tests/matrix_tests.cpp)
+target_include_directories(matrix_tests PRIVATE include)
+target_compile_options(matrix_tests PRIVATE -Wall -Wextra)
+
+# Register with CTest so `ctest` (or `cmake --build build --target test`) runs it.
+add_test(NAME matrix_tests COMMAND matrix_tests)

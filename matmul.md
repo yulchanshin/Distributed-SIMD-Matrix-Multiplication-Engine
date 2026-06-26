@@ -43,8 +43,8 @@ Establish this exact repository structure to handle the multi-language workspace
 Tick a box when its ticket is merged into `main`.
 
 **Week 1 — Bare-Metal Compute Engine**
-- [ ] TSK-101: Build System Setup & Google Benchmark Integration
-- [ ] TSK-102: Naive Matrix Multiplication & Flat Memory Class
+- [X] TSK-101: Build System Setup & Google Benchmark Integration
+- [X] TSK-102: Naive Matrix Multiplication & Flat Memory Class
 - [ ] TSK-103: Cache Locality Optimization (Matrix Transposition)
 - [ ] TSK-104: Hardware-Level Vectorization via AVX2 Intrinsics
 
@@ -186,7 +186,7 @@ Use this standardized measurement table to track your progress as you implement 
 
 | Phase / Optimization Stage | Matrix Dimensions | Execution Speed (ms) | Relative Speedup | Core Bottleneck / Constraint |
 | :--- | :--- | :--- | :--- | :--- |
-| **Phase 1.2: Naive Matrix Loop** | 1024x1024 | | 1.0x (Baseline) | Memory Bandwidth / Cache Trashing |
+| **Phase 1.2: Naive Matrix Loop** | 1024x1024 | 1028.95 | 1.0x (Baseline) | Memory Bandwidth / Cache Trashing |
 | **Phase 1.3: Transposed Matrix** | 1024x1024 | | | CPU Scalar Limits |
 | **Phase 1.4: SIMD AVX2 Active** | 1024x1024 | | | Core Clock Frequency Bounds |
 | **Phase 3.2: Redis Cache Hit** | 1024x1024 | | | Network TCP I/O Limits |
