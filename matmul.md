@@ -187,6 +187,6 @@ Use this standardized measurement table to track your progress as you implement 
 | Phase / Optimization Stage | Matrix Dimensions | Execution Speed (ms) | Relative Speedup | Core Bottleneck / Constraint |
 | :--- | :--- | :--- | :--- | :--- |
 | **Phase 1.2: Naive Matrix Loop** | 1024x1024 | 1028.95 | 1.0x (Baseline) | Memory Bandwidth / Cache Trashing |
-| **Phase 1.3: Transposed Matrix** | 1024x1024 | | | CPU Scalar Limits |
+| **Phase 1.3: Transposed Matrix** | 1024x1024 | 425.95 | 2.42x | CPU Scalar Limits |
 | **Phase 1.4: SIMD AVX2 Active** | 1024x1024 | | | Core Clock Frequency Bounds |
 | **Phase 3.2: Redis Cache Hit** | 1024x1024 | | | Network TCP I/O Limits |
