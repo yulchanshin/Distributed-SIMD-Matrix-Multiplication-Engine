@@ -45,7 +45,7 @@ public:
         return B_T;
     }
 
-    static Matrix multiply_matrix_transposd(const Matrix& A, const Matrix& B){
+    static Matrix multiply_matrix_transpose(const Matrix& A, const Matrix& B){
         if (A.cols() != B.rows()){
             throw std::invalid_argument(
                 "The column of Matrix A does not match the row of Matrix B");
