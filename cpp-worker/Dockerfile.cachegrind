@@ -13,10 +13,8 @@ COPY . .
 RUN cmake -B build-linux -DCMAKE_BUILD_TYPE=Release -DMATMUL_NATIVE_ARCH=OFF \
     && cmake --build build-linux --target matrix_benchmark -j
 
-# Two SEPARATE cachegrind passes — one per implementation — so each gets its
-# own D1 miss rate. Running both in one process would aggregate the stats into a
-# single useless combined number. Pinned to /512 so the comparison is matched
-# and fast. Compare the "D1 miss rate" line between the two passes.
+# Two SEPARATE cachegrind passes, one per implementation, so each gets its
+# own D1 miss rate. 
 CMD bash -c '\
     echo "===== NAIVE (1024x1024) =====" && \
     valgrind --tool=cachegrind --cache-sim=yes \
