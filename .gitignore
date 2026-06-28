@@ -1,7 +1,7 @@
 # CMake build output (generated, disposable — regenerate with `cmake -B build`)
 build/
 cpp-worker/build/
-
+cpp-worker/build-clang/
 # clangd / language-server index cache (generated from compile_commands.json)
 .cache/
 

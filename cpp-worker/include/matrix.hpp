@@ -33,6 +33,39 @@ public:
     inline float operator()(std::size_t row, size_t col) const {
         return data_[row * cols_ + col];
     }
+    
+    //O(N^2) 
+    Matrix transpose() const {
+        Matrix B_T(cols_, rows_);
+        for (std::size_t i = 0; i < rows_; ++i){
+            for (std::size_t j = 0; j < cols_; ++j){
+                B_T(j, i) = (*this)(i,j);
+            }
+        }
+        return B_T;
+    }
+
+    static Matrix multiply_matrix_transpose(const Matrix& A, const Matrix& B){
+        if (A.cols() != B.rows()){
+            throw std::invalid_argument(
+                "The column of Matrix A does not match the row of Matrix B");
+        }
+
+        Matrix C(A.rows(), B.cols());
+        //transpose to avoid cache thrashing!
+        Matrix B_T = B.transpose();
+
+        for (size_t i = 0; i < A.rows(); ++i){
+            for (size_t j = 0; j < B_T.rows(); ++j){
+              float sum = 0.0f;
+              for (size_t k = 0; k < B_T.cols(); ++k){
+                  sum += A(i, k) * B_T(j, k);
+              }
+              C(i, j) = sum;
+            }
+        }
+        return C;
+    }
 
     // matrix multiplication
     static Matrix multiply_matrix_naive(const Matrix& A, const Matrix& B) {
