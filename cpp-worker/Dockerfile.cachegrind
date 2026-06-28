@@ -1,0 +1,30 @@
+#docker build -f Dockerfile.cachegrind -t matmul-cache .
+#docker run --rm matmul-cache
+FROM ubuntu:24.04
+
+RUN apt-get update && apt-get install -y \
+    build-essential cmake git valgrind \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY . .
+
+# -march=native OFF so it doesn't emit host-specific instrs under emulation
+RUN cmake -B build-linux -DCMAKE_BUILD_TYPE=Release -DMATMUL_NATIVE_ARCH=OFF \
+    && cmake --build build-linux --target matrix_benchmark -j
+
+# Two SEPARATE cachegrind passes — one per implementation — so each gets its
+# own D1 miss rate. Running both in one process would aggregate the stats into a
+# single useless combined number. Pinned to /512 so the comparison is matched
+# and fast. Compare the "D1 miss rate" line between the two passes.
+CMD bash -c '\
+    echo "===== NAIVE (1024x1024) =====" && \
+    valgrind --tool=cachegrind --cache-sim=yes \
+        ./build-linux/matrix_benchmark \
+        --benchmark_filter="Naive.*/1024$" --benchmark_min_time=0.01s ; \
+    echo "===== TRANSPOSED (1024x1024) =====" && \
+    valgrind --tool=cachegrind --cache-sim=yes \
+        ./build-linux/matrix_benchmark \
+        --benchmark_filter="Transposed.*/1024$" --benchmark_min_time=0.01s'
+
+
