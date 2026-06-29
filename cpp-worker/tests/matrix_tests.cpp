@@ -102,6 +102,31 @@ static void test_non_square(MultiplyFn mul) {
     CHECK(C(1, 1) == 154.0f);
 }
 
+// Inner dimension 7 = one 4-wide SIMD step + a 3-element scalar tail. This is
+// the case that exercises BOTH the vectorized loop and the remainder loop in
+// the SIMD variant; every square / multiple-of-4 size skips the tail entirely,
+// which is exactly where bugs hide. Cross-check against the naive baseline
+// rather than hand-computing a 5x6 result. Values are small ints (exactly
+// representable, and the SIMD reorders the summation), so == stays safe.
+static void test_inner_dim_seven(MultiplyFn mul) {
+    const std::size_t M = 5, K = 7, N = 6;
+    std::vector<float> a(M * K), b(K * N);
+    for (std::size_t idx = 0; idx < a.size(); ++idx)
+        a[idx] = static_cast<float>((idx % 7) + 1);
+    for (std::size_t idx = 0; idx < b.size(); ++idx)
+        b[idx] = static_cast<float>((idx % 5) + 1);
+    Matrix A(M, K, a), B(K, N, b);
+
+    Matrix expected = Matrix::multiply_matrix_naive(A, B);
+    Matrix C = mul(A, B);
+
+    CHECK(C.rows() == M);
+    CHECK(C.cols() == N);
+    for (std::size_t i = 0; i < M; ++i)
+        for (std::size_t j = 0; j < N; ++j)
+            CHECK(C(i, j) == expected(i, j));
+}
+
 // Incompatible dims (A.cols() != B.rows()) must throw.
 static void test_dimension_mismatch_throws(MultiplyFn mul) {
     Matrix A(2, 3, std::vector<float>(6, 1.0f));
@@ -149,6 +174,10 @@ int main() {
     } variants[] = {
         {"naive", &Matrix::multiply_matrix_naive},
         {"accumulator", &Matrix::multiply_matrix_accumulator},
+        {"transpose", &Matrix::multiply_matrix_transpose},
+#if defined(__ARM_NEON)
+        {"SIMD", &Matrix::multiply_matrix_SIMD},
+#endif
     };
 
     for (const auto& v : variants) {
@@ -157,6 +186,7 @@ int main() {
         test_identity(v.fn);
         test_known_2x2(v.fn);
         test_non_square(v.fn);
+        test_inner_dim_seven(v.fn);
         test_dimension_mismatch_throws(v.fn);
     }
 

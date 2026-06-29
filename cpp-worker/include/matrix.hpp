@@ -2,7 +2,9 @@
 #include <cstddef> //for std::size_t
 #include <stdexcept>
 #include <vector>
-#include <arm_neon.h>
+#if defined(__ARM_NEON)
+#include <arm_neon.h> // NEON intrinsics; ARM-only, so the SIMD path is gated too
+#endif
 
 class Matrix {
 private:
@@ -46,6 +48,7 @@ public:
         return B_T;
     }
 
+#if defined(__ARM_NEON)
     static Matrix multiply_matrix_SIMD(const Matrix& A, const Matrix& B){
         if (A.cols() != B.rows()){
             throw std::invalid_argument(
@@ -61,16 +64,18 @@ public:
               float32x4_t sum_vec = vdupq_n_f32(0.0f);
               std::size_t k = 0;
               for (; k + 4 <= B_T.cols(); k += 4){
+                  //grabbing four floats from each matrices
                   float32x4_t a_vec = vld1q_f32(&A(i, k));
                   float32x4_t b_vec = vld1q_f32(&B_T(j, k));
-
+                  //adding the multiple of a_vec[index] + b_vec[index] to sum_vec[index] 
                   sum_vec = vmlaq_f32(sum_vec, a_vec, b_vec);
               }
               float final_sum_arr[4];
+              //Extract the 4 partial sums back to a normal float array
               vst1q_f32(final_sum_arr, sum_vec);
               float final_dot_prod = final_sum_arr[0] + final_sum_arr[1] +
                                      final_sum_arr[2] + final_sum_arr[3];
-
+              //fallback loop
               for(; k < B_T.cols(); k++){
                   final_dot_prod += A(i, k) * B_T(j,k);
               }
@@ -80,6 +85,7 @@ public:
         }
         return C;
     }
+#endif // __ARM_NEON
 
     static Matrix multiply_matrix_transpose(const Matrix& A, const Matrix& B){
         if (A.cols() != B.rows()){
