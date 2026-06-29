@@ -45,8 +45,8 @@ Tick a box when its ticket is merged into `main`.
 **Week 1 — Bare-Metal Compute Engine**
 - [X] TSK-101: Build System Setup & Google Benchmark Integration
 - [X] TSK-102: Naive Matrix Multiplication & Flat Memory Class
-- [ ] TSK-103: Cache Locality Optimization (Matrix Transposition)
-- [ ] TSK-104: Hardware-Level Vectorization via AVX2 Intrinsics
+- [X] TSK-103: Cache Locality Optimization (Matrix Transposition)
+- [X] TSK-104: Hardware-Level Vectorization via AVX2 Intrinsics
 
 **Week 2 — Network Bridge**
 - [ ] TSK-201: Protocol Contract Schema Definition
