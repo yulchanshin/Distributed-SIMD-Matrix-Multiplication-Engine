@@ -2,6 +2,7 @@
 #include <cstddef> //for std::size_t
 #include <stdexcept>
 #include <vector>
+#include <arm_neon.h>
 
 class Matrix {
 private:
@@ -30,7 +31,7 @@ public:
     }
 
     // read only access
-    inline float operator()(std::size_t row, size_t col) const {
+    inline const float& operator()(std::size_t row, size_t col) const {
         return data_[row * cols_ + col];
     }
     
@@ -43,6 +44,41 @@ public:
             }
         }
         return B_T;
+    }
+
+    static Matrix multiply_matrix_SIMD(const Matrix& A, const Matrix& B){
+        if (A.cols() != B.rows()){
+            throw std::invalid_argument(
+                "The column of Matrix A does not match the row of Matrix B");
+        }
+
+        Matrix C(A.rows(), B.cols());
+        //transpose to avoid cache thrashing!
+        Matrix B_T = B.transpose();
+
+        for (std::size_t i = 0; i < A.rows(); ++i){
+            for (std::size_t j = 0; j < B_T.rows(); ++j){
+              float32x4_t sum_vec = vdupq_n_f32(0.0f);
+              std::size_t k = 0;
+              for (; k + 4 <= B_T.cols(); k += 4){
+                  float32x4_t a_vec = vld1q_f32(&A(i, k));
+                  float32x4_t b_vec = vld1q_f32(&B_T(j, k));
+
+                  sum_vec = vmlaq_f32(sum_vec, a_vec, b_vec);
+              }
+              float final_sum_arr[4];
+              vst1q_f32(final_sum_arr, sum_vec);
+              float final_dot_prod = final_sum_arr[0] + final_sum_arr[1] +
+                                     final_sum_arr[2] + final_sum_arr[3];
+
+              for(; k < B_T.cols(); k++){
+                  final_dot_prod += A(i, k) * B_T(j,k);
+              }
+
+              C(i,j) = final_dot_prod;
+            }
+        }
+        return C;
     }
 
     static Matrix multiply_matrix_transpose(const Matrix& A, const Matrix& B){
