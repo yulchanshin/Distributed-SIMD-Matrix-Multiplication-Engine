@@ -46,6 +46,22 @@ static void BM_Matrix_Multiplication_Transposed(benchmark::State& state) {
     }
 }
 
+#if defined(__ARM_NEON)
+static void BM_Matrix_Multiplication_SIMD(benchmark::State& state) {
+    std::size_t N = static_cast<std::size_t>(state.range(0));
+    std::vector<float> ones(N * N, 1.0f);
+    std::vector<float> ones2(N * N, 1.0f);
+
+    const Matrix A(N, N, std::move(ones));
+    const Matrix B(N, N, std::move(ones2));
+
+    for (const auto& _ : state) {
+        Matrix C = Matrix::multiply_matrix_SIMD(A, B);
+        benchmark::DoNotOptimize(C);
+    }
+}
+#endif // __ARM_NEON
+
 
 BENCHMARK(BM_Naive_Matrix_Multiplication)
     ->Arg(64)
@@ -67,4 +83,12 @@ BENCHMARK(BM_Matrix_Multiplication_Transposed)
     ->Arg(256)
     ->Arg(512)
     ->Arg(1024);
+#if defined(__ARM_NEON)
+BENCHMARK(BM_Matrix_Multiplication_SIMD)
+    ->Arg(64)
+    ->Arg(128)
+    ->Arg(256)
+    ->Arg(512)
+    ->Arg(1024);
+#endif // __ARM_NEON
 BENCHMARK_MAIN();
