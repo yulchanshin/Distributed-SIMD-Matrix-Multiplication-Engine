@@ -1,0 +1,34 @@
+//specify version
+syntax = "proto3";
+
+//the namespace
+package matrix_engine;
+
+//tells go what to name the generated package
+option go_package = "./matrixpb";
+
+//define Matrix data structure
+
+message Matrix{
+  uint32 rows = 1;
+  uint32 cols = 2;
+  
+  //repeated is the equivalent of std::vector<T> in C++ or slice in Go
+  //len(data) = rows * cols;
+  repeated float data = 3;
+}
+
+message MultiplyRequest {
+  Matrix matrix_a = 1;
+  Matrix matrix_b = 2;
+}
+
+message MultiplyResponse{
+  Matrix result_matrix = 1;
+
+  float execution_time_ms = 2;
+}
+
+service MatrixService {
+  rpc Multiply(MultiplyRequest) returns (MultiplyResponse);
+}
