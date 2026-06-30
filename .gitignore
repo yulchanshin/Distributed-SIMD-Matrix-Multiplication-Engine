@@ -5,5 +5,9 @@ cpp-worker/build-clang/
 # clangd / language-server index cache (generated from compile_commands.json)
 .cache/
 
+# Generated protobuf/gRPC stubs (regenerate with ./generate.sh)
+cpp-worker/generated/
+go-gateway/matrixpb/
+
 # macOS
 .DS_Store

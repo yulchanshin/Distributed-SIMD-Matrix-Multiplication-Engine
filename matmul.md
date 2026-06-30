@@ -49,7 +49,7 @@ Tick a box when its ticket is merged into `main`.
 - [X] TSK-104: Hardware-Level Vectorization via AVX2 Intrinsics
 
 **Week 2 — Network Bridge**
-- [ ] TSK-201: Protocol Contract Schema Definition
+- [X] TSK-201: Protocol Contract Schema Definition
 - [ ] TSK-202: Native C++ gRPC Service Execution
 
 **Week 3 — Distributed Control Plane**
