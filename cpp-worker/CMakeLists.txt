@@ -70,3 +70,60 @@ target_compile_options(matrix_tests PRIVATE -Wall -Wextra)
 
 # Register with CTest so `ctest` (or `cmake --build build --target test`) runs it.
 add_test(NAME matrix_tests COMMAND matrix_tests)
+
+# --- TSK-202: C++ gRPC server ---
+find_package(Protobuf CONFIG REQUIRED)
+find_package(gRPC CONFIG REQUIRED)
+
+# Where protoc drops its output. Inside the build tree (an artifact, not source)
+# so it stays gitignored and regenerable — never mixed into include/ or src/.
+set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
+file(MAKE_DIRECTORY ${GENERATED_DIR})  # protoc won't create its own out dir
+
+# The .proto lives at the repo root, one level up from cpp-worker/.
+get_filename_component(PROTO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../proto" ABSOLUTE)
+set(PROTO_FILE "${PROTO_DIR}/matrix.proto")
+
+# The files protoc produces, named after the .proto's basename.
+set(GENERATED_SRCS
+    "${GENERATED_DIR}/matrix.pb.cc"
+    "${GENERATED_DIR}/matrix.grpc.pb.cc")
+set(GENERATED_HDRS
+    "${GENERATED_DIR}/matrix.pb.h"
+    "${GENERATED_DIR}/matrix.grpc.pb.h")
+
+# Run protoc at build time. This is exactly the invocation from generate.sh,
+# but CMake owns it now. DEPENDS on the .proto means it re-runs only when the
+# schema changes; listing these files as OUTPUT lets CMake wire the dependency
+# so they're generated before matrix_server compiles.
+add_custom_command(
+    OUTPUT ${GENERATED_SRCS} ${GENERATED_HDRS}
+    COMMAND protobuf::protoc
+    # No quotes around the paths: VERBATIM already passes each argument as a
+    # single token, and literal quotes would become part of the path itself.
+    ARGS --proto_path=${PROTO_DIR}
+         --cpp_out=${GENERATED_DIR}
+         --grpc_out=${GENERATED_DIR}
+         --plugin=protoc-gen-grpc=$<TARGET_FILE:gRPC::grpc_cpp_plugin>
+         ${PROTO_FILE}
+    DEPENDS "${PROTO_FILE}"
+    COMMENT "Generating C++ protobuf + gRPC sources from matrix.proto"
+    VERBATIM)
+
+# The server: our entrypoint + the generated message/service code. Listing the
+# generated .cc files here is what pulls the add_custom_command into the build.
+add_executable(matrix_server src/main.cpp src/matrix_service.cpp ${GENERATED_SRCS})
+
+# include/ for our Matrix header; GENERATED_DIR so #include "matrix.pb.h" resolves.
+target_include_directories(matrix_server PRIVATE include ${GENERATED_DIR})
+
+# grpc++ transitively brings in the rest of gRPC + Abseil; libprotobuf is named
+# explicitly because main.cpp uses protobuf message types directly.
+target_link_libraries(matrix_server PRIVATE gRPC::grpc++ protobuf::libprotobuf)
+
+# Match the benchmark target's optimization flags (this is a perf project).
+# No -Wextra: the generated protobuf code is noisy and we don't own it.
+target_compile_options(matrix_server PRIVATE
+    -Wall
+    $<$<CONFIG:Release>:-O3>
+    $<$<AND:$<CONFIG:Release>,$<BOOL:${MATMUL_NATIVE_ARCH}>>:-march=native>)
