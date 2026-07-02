@@ -50,7 +50,7 @@ Tick a box when its ticket is merged into `main`.
 
 **Week 2 — Network Bridge**
 - [X] TSK-201: Protocol Contract Schema Definition
-- [ ] TSK-202: Native C++ gRPC Service Execution
+- [X] TSK-202: Native C++ gRPC Service Execution
 
 **Week 3 — Distributed Control Plane**
 - [ ] TSK-301: Go API Gateway Web Router Setup
