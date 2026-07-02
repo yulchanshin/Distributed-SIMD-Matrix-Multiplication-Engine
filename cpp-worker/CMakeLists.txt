@@ -99,18 +99,20 @@ set(GENERATED_HDRS
 add_custom_command(
     OUTPUT ${GENERATED_SRCS} ${GENERATED_HDRS}
     COMMAND protobuf::protoc
-    ARGS --proto_path="${PROTO_DIR}"
-         --cpp_out="${GENERATED_DIR}"
-         --grpc_out="${GENERATED_DIR}"
+    # No quotes around the paths: VERBATIM already passes each argument as a
+    # single token, and literal quotes would become part of the path itself.
+    ARGS --proto_path=${PROTO_DIR}
+         --cpp_out=${GENERATED_DIR}
+         --grpc_out=${GENERATED_DIR}
          --plugin=protoc-gen-grpc=$<TARGET_FILE:gRPC::grpc_cpp_plugin>
-         "${PROTO_FILE}"
+         ${PROTO_FILE}
     DEPENDS "${PROTO_FILE}"
     COMMENT "Generating C++ protobuf + gRPC sources from matrix.proto"
     VERBATIM)
 
 # The server: our entrypoint + the generated message/service code. Listing the
 # generated .cc files here is what pulls the add_custom_command into the build.
-add_executable(matrix_server src/main.cpp ${GENERATED_SRCS})
+add_executable(matrix_server src/main.cpp src/matrix_service.cpp ${GENERATED_SRCS})
 
 # include/ for our Matrix header; GENERATED_DIR so #include "matrix.pb.h" resolves.
 target_include_directories(matrix_server PRIVATE include ${GENERATED_DIR})
